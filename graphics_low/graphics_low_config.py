@@ -1,4 +1,8 @@
-"""降低画质插件的配置。"""
+"""降低画质插件的配置。
+
+只存三个目标档位。原始档位不在这里 —— 快照要全局一份，放在
+graphics_low_snapshot.py 对应的 config/graphics_low_snapshot.yml 里。
+"""
 
 from one_dragon.base.operation.application.application_config import ApplicationConfig
 
@@ -41,39 +45,3 @@ class GraphicsLowConfig(ApplicationConfig):
     @target_antialias.setter
     def target_antialias(self, new_value: str) -> None:
         self.update('target_antialias', new_value)
-
-    @property
-    def original_fps(self) -> str:
-        """修改前的帧率，空串表示没记录到。"""
-        return self.get('original_fps', '')
-
-    @original_fps.setter
-    def original_fps(self, new_value: str) -> None:
-        self.update('original_fps', new_value)
-
-    @property
-    def original_render_scale(self) -> str:
-        """修改前的渲染精度，空串表示没记录到。"""
-        return self.get('original_render_scale', '')
-
-    @original_render_scale.setter
-    def original_render_scale(self, new_value: str) -> None:
-        self.update('original_render_scale', new_value)
-
-    @property
-    def original_antialias(self) -> str:
-        """修改前的抗锯齿，空串表示没记录到。"""
-        return self.get('original_antialias', '')
-
-    @original_antialias.setter
-    def original_antialias(self, new_value: str) -> None:
-        self.update('original_antialias', new_value)
-
-    @property
-    def snapshot_date(self) -> str:
-        """记录原始档位的日期，格式 YYYY-MM-DD。"""
-        return self.get('snapshot_date', '')
-
-    @snapshot_date.setter
-    def snapshot_date(self, new_value: str) -> None:
-        self.update('snapshot_date', new_value)

@@ -26,6 +26,7 @@ from zzz_od.operation.transport import Transport
 from . import graphics_low_const, graphics_low_screen
 from .graphics_low_config import GraphicsLowConfig
 from .graphics_low_screen import GraphicsRow
+from .graphics_low_snapshot import GraphicsLowSnapshotConfig
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -50,6 +51,8 @@ class GraphicsLowApp(ZApplication):
             instance_idx=self.ctx.current_instance_idx,
             group_id=application_const.DEFAULT_GROUP_ID,
         )
+        # 快照全局一份，不跟实例走
+        self.snapshot: GraphicsLowSnapshotConfig = GraphicsLowSnapshotConfig()
 
     # ─── 通用小工具 ────────────────────────────────────────
 
@@ -180,7 +183,7 @@ class GraphicsLowApp(ZApplication):
     @operation_node(name='记录原始档位', screenshot_before_round=False)
     def snapshot_original(self) -> OperationRoundResult:
         """只在没有记录过的时候写一次，避免把低画质当成原始档位覆盖掉。"""
-        if self.config.original_fps != '':
+        if self.snapshot.original_fps != '':
             return self.round_success('已有原始档位记录')
 
         screen = self.screenshot()
@@ -194,10 +197,10 @@ class GraphicsLowApp(ZApplication):
         if any(value == '' for value in values.values()):
             log.warning(f'原始画质只读到一部分 {values}，读不到的项恢复时用兜底档位')
 
-        self.config.original_fps = values.get('target_fps', '')
-        self.config.original_render_scale = values.get('target_render_scale', '')
-        self.config.original_antialias = values.get('target_antialias', '')
-        self.config.snapshot_date = datetime.now().strftime('%Y-%m-%d')
+        self.snapshot.original_fps = values.get('target_fps', '')
+        self.snapshot.original_render_scale = values.get('target_render_scale', '')
+        self.snapshot.original_antialias = values.get('target_antialias', '')
+        self.snapshot.snapshot_date = datetime.now().strftime('%Y-%m-%d')
         log.info(f'记录原始画质 {values}')
         return self.round_success(f'原始画质 {values}')
 

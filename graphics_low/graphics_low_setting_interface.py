@@ -23,6 +23,7 @@ from one_dragon_qt.widgets.vertical_scroll_interface import VerticalScrollInterf
 
 from . import graphics_low_const
 from .graphics_low_config import GraphicsLowConfig
+from .graphics_low_snapshot import GraphicsLowSnapshotConfig
 
 if TYPE_CHECKING:
     from one_dragon.base.operation.one_dragon_context import OneDragonContext
@@ -58,6 +59,7 @@ class GraphicsLowSettingInterface(VerticalScrollInterface, GroupIdMixin):
         )
         self.ctx: OneDragonContext = ctx
         self.config: GraphicsLowConfig | None = None
+        self.snapshot: GraphicsLowSnapshotConfig | None = None
         self.fps_opt: ComboBoxSettingCard | None = None
         self.render_scale_opt: ComboBoxSettingCard | None = None
         self.antialias_opt: ComboBoxSettingCard | None = None
@@ -129,28 +131,29 @@ class GraphicsLowSettingInterface(VerticalScrollInterface, GroupIdMixin):
         self.antialias_opt.init_with_adapter(
             get_prop_adapter(self.config, 'target_antialias')
         )
+        # 快照全局一份，所有实例共用
+        self.snapshot = GraphicsLowSnapshotConfig()
         self._update_snapshot_display()
 
     def _update_snapshot_display(self) -> None:
         """刷新原始档位卡片的副标题。"""
-        if self.config is None or self.snapshot_opt is None:
+        if self.snapshot is None or self.snapshot_opt is None:
             return
-        if self.config.original_fps == '':
-            self.snapshot_opt.setContent('还没记录，第一次运行成功后会把当时的档位存下来')
+        if self.snapshot.original_fps == '':
+            self.snapshot_opt.setContent(
+                '还没记录，第一次运行成功后会把当时的档位存下来（全局一份，所有账号共用）'
+            )
             return
         self.snapshot_opt.setContent(
-            f'帧率 {self.config.original_fps} / 渲染精度 '
-            f'{self.config.original_render_scale} / 抗锯齿 '
-            f'{self.config.original_antialias}（{self.config.snapshot_date} 记录）'
+            f'帧率 {self.snapshot.original_fps} / 渲染精度 '
+            f'{self.snapshot.original_render_scale} / 抗锯齿 '
+            f'{self.snapshot.original_antialias}（{self.snapshot.snapshot_date} 记录）'
         )
 
     def _on_clear_snapshot_clicked(self) -> None:
         """清空原始档位，下次运行重新记录。"""
-        if self.config is None:
+        if self.snapshot is None:
             return
-        self.config.original_fps = ''
-        self.config.original_render_scale = ''
-        self.config.original_antialias = ''
-        self.config.snapshot_date = ''
+        self.snapshot.clear()
         log.info('已清空原始档位记录，下次运行会重新记录')
         self._update_snapshot_display()
