@@ -1,0 +1,25 @@
+{
+  "id": "graphics_low",
+  "name": "降低游戏画质",
+  "summary": "进游戏后把帧率、渲染精度、抗锯齿调到低档，并记录修改前的原始档位，供「恢复游戏画质」使用。",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "defaultGroup": true,
+  "needNotify": false,
+  "author": {
+    "name": "kinggod899",
+    "url": "https://github.com/kinggod899"
+  },
+  "homepage": "https://github.com/kinggod899/graphics_low",
+  "cover": "cover.png",
+  "risk": [
+    "automation",
+    "filesystem"
+  ],
+  "compatibility": {
+    "minAppVersion": "2.0.0",
+    "minCoreApiVersion": 1,
+    "python": ">=3.11"
+  },
+  "apps": []
+}
