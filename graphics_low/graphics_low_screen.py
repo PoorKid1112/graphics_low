@@ -59,10 +59,16 @@ PAUSE_BOTTOM_BAR: Rect = Rect(200, 924, 1728, 1058)
 PAUSE_MENU_KEYWORD: str = '设置'
 
 # 设置界面的左侧页签列与右侧标签列
-TAB_COLUMN: Rect = Rect(160, 170, 260, 650)
+TAB_COLUMN: Rect = Rect(160, 170, 260, 700)
 RENDER_TAB_KEYWORD: str = '画面'
 LABEL_COLUMN: Rect = Rect(400, 180, 800, 990)
 RENDER_PANEL_KEYWORD: str = '渲染精度'
+
+# 左侧页签列最下面的「其他」页签。实测选中态药丸 69~343 × 574~645，取正中点。
+# 这里不用 OCR：选中态是深色文字压在亮色药丸上，OCR 不稳，而页签位置是固定的。
+OTHER_TAB_POINT: Point = Point(206, 610)
+# 切到「其他」页后右侧第一屏就会出现这一行，拿它确认页签切过去了
+OTHER_PANEL_KEYWORD: str = '字体选项'
 
 # 设置界面公共点击点
 BACK_POINT: Point = Point(70, 36)
@@ -88,4 +94,11 @@ FPS_ROW: GraphicsRow = GraphicsRow('target_fps', '帧率', 444, ('30', '60', '�
 RENDER_SCALE_ROW: GraphicsRow = GraphicsRow('target_render_scale', '渲染精度', 610, ('0.8', '1.0', '1.2'))
 ANTIALIAS_ROW: GraphicsRow = GraphicsRow('target_antialias', '抗锯齿', 693, ('关闭', 'TAA', 'SMAA'))
 
+# 「其他」页里的字体选项。行距同样是 83，「字体选项」是第 4 行，所以行中心 479；
+# 展开后的下拉面板几何和「画面」页一致，选项同样是 行中心 + 76 + 67 * 下标。
+FONT_ROW: GraphicsRow = GraphicsRow(
+    'target_font', '字体选项', 479, ('推荐方案', '全局粗体', '全局细体'),
+)
+
+# 只有「画面」页的这三行会进快照，字体不在快照里，所以 FONT_ROW 不放进 ROWS
 ROWS: tuple[GraphicsRow, ...] = (FPS_ROW, RENDER_SCALE_ROW, ANTIALIAS_ROW)

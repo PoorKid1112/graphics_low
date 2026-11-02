@@ -49,6 +49,19 @@ class GraphicsLowSnapshotConfig(YamlConfig):
         self.update('original_antialias', new_value)
 
     @property
+    def original_font(self) -> str:
+        """原始字体选项，空串表示没记录到。
+
+        字体在「其他」页，只能等切过去之后再记，所以它会比上面三项晚一步写入；
+        老版本记下的快照里没有这一项，运行时会补记一次。
+        """
+        return self.get('original_font', '')
+
+    @original_font.setter
+    def original_font(self, new_value: str) -> None:
+        self.update('original_font', new_value)
+
+    @property
     def snapshot_date(self) -> str:
         """记录日期，格式 YYYY-MM-DD。"""
         return self.get('snapshot_date', '')
@@ -62,4 +75,5 @@ class GraphicsLowSnapshotConfig(YamlConfig):
         self.original_fps = ''
         self.original_render_scale = ''
         self.original_antialias = ''
+        self.original_font = ''
         self.snapshot_date = ''

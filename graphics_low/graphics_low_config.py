@@ -45,3 +45,12 @@ class GraphicsLowConfig(ApplicationConfig):
     @target_antialias.setter
     def target_antialias(self, new_value: str) -> None:
         self.update('target_antialias', new_value)
+
+    @property
+    def target_font(self) -> str:
+        """「其他」页的目标字体，取值必须和游戏下拉框文字一致。"""
+        return self.get('target_font', '全局细体')
+
+    @target_font.setter
+    def target_font(self, new_value: str) -> None:
+        self.update('target_font', new_value)

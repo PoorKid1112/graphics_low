@@ -45,6 +45,11 @@ ANTIALIAS_OPTIONS: list[ConfigItem] = [
     ConfigItem('TAA', 'TAA'),
     ConfigItem('SMAA', 'SMAA'),
 ]
+FONT_OPTIONS: list[ConfigItem] = [
+    ConfigItem('推荐方案', '推荐方案'),
+    ConfigItem('全局粗体', '全局粗体'),
+    ConfigItem('全局细体', '全局细体'),
+]
 
 
 class GraphicsLowSettingInterface(VerticalScrollInterface, GroupIdMixin):
@@ -63,6 +68,7 @@ class GraphicsLowSettingInterface(VerticalScrollInterface, GroupIdMixin):
         self.fps_opt: ComboBoxSettingCard | None = None
         self.render_scale_opt: ComboBoxSettingCard | None = None
         self.antialias_opt: ComboBoxSettingCard | None = None
+        self.font_opt: ComboBoxSettingCard | None = None
         self.snapshot_opt: PushSettingCard | None = None
 
     def get_content_widget(self) -> QWidget:
@@ -72,7 +78,8 @@ class GraphicsLowSettingInterface(VerticalScrollInterface, GroupIdMixin):
         layout.setSpacing(12)
 
         intro = CaptionLabel(
-            '一条龙每次运行都会把游戏「设置 → 画面」里的这三项调成下面的档位，'
+            '一条龙每次运行都会把游戏「设置 → 画面」里的帧率、渲染精度、抗锯齿，'
+            '以及「设置 → 其他」里的字体选项调成下面的档位，'
             '运行结束时由「恢复游戏画质」还原。',
             widget,
         )
@@ -103,6 +110,14 @@ class GraphicsLowSettingInterface(VerticalScrollInterface, GroupIdMixin):
         )
         layout.addWidget(self.antialias_opt)
 
+        self.font_opt = ComboBoxSettingCard(
+            icon=FluentIcon.FONT,
+            title='目标字体',
+            content='降低画质时把「其他」页的字体选项改成这一档',
+            options_list=FONT_OPTIONS,
+        )
+        layout.addWidget(self.font_opt)
+
         self.snapshot_opt = PushSettingCard(
             icon=FluentIcon.HISTORY,
             title='原始档位记录',
@@ -131,6 +146,7 @@ class GraphicsLowSettingInterface(VerticalScrollInterface, GroupIdMixin):
         self.antialias_opt.init_with_adapter(
             get_prop_adapter(self.config, 'target_antialias')
         )
+        self.font_opt.init_with_adapter(get_prop_adapter(self.config, 'target_font'))
         # 快照全局一份，所有实例共用
         self.snapshot = GraphicsLowSnapshotConfig()
         self._update_snapshot_display()
@@ -147,7 +163,8 @@ class GraphicsLowSettingInterface(VerticalScrollInterface, GroupIdMixin):
         self.snapshot_opt.setContent(
             f'帧率 {self.snapshot.original_fps} / 渲染精度 '
             f'{self.snapshot.original_render_scale} / 抗锯齿 '
-            f'{self.snapshot.original_antialias}（{self.snapshot.snapshot_date} 记录）'
+            f'{self.snapshot.original_antialias} / 字体 {self.snapshot.original_font or "未记录"}'
+            f'（{self.snapshot.snapshot_date} 记录）'
         )
 
     def _on_clear_snapshot_clicked(self) -> None:

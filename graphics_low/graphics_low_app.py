@@ -2,7 +2,7 @@
 
 执行链路：传送录像店 → 回到大世界 → 点左上「菜单」开暂停菜单 → 点底部「设置」
 → 确认停在「画面」页签 → 记录原始档位 → 逐项改帧率 / 渲染精度 / 抗锯齿
-→ 连点两次返回回到大世界。
+→ 切到「其他」页签 → 记录原始字体 → 改字体选项 → 连点两次返回回到大世界。
 
 游戏里改画质是即时生效的，没有「保存」按钮，所以链路里没有确认节点。
 """
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 
 class GraphicsLowApp(ZApplication):
-    """把游戏帧率、渲染精度、抗锯齿调到低档，并在第一次执行时记下原始档位。"""
+    """把游戏帧率、渲染精度、抗锯齿、字体调到低档，并在第一次执行时记下原始档位。"""
 
     def __init__(self, ctx: ZContext) -> None:
         ZApplication.__init__(
@@ -95,6 +95,18 @@ class GraphicsLowApp(ZApplication):
             if str_utils.find_by_lcs(option, text, percent=1.0):
                 return option
         return ''
+
+    def _has_font_row(self, screen: ndarray) -> bool:
+        """右侧标签列里有没有「字体选项」，用它判断当前在不在「其他」页。"""
+        matches = self.ctx.ocr_service.get_ocr_result_list(
+            screen, rect=graphics_low_screen.LABEL_COLUMN, crop_first=True,
+        )
+        for match in matches:
+            if str_utils.find_by_lcs(
+                graphics_low_screen.OTHER_PANEL_KEYWORD, match.data, percent=0.8,
+            ):
+                return True
+        return False
 
     def _apply_row(self, row: GraphicsRow, target: str) -> OperationRoundResult:
         """把一行下拉框改成目标值。
@@ -220,6 +232,42 @@ class GraphicsLowApp(ZApplication):
         return self._apply_row(graphics_low_screen.ANTIALIAS_ROW, self.config.target_antialias)
 
     @node_from(from_name='设置抗锯齿')
+    @operation_node(name='切到其他页签', screenshot_before_round=False, node_max_retry_times=5)
+    def switch_to_other_tab(self) -> OperationRoundResult:
+        """从「画面」切到最下面的「其他」页，字体选项在这个页里。"""
+        if self._has_font_row(self.screenshot()):
+            return self.round_success('已在其他页')
+        self._click_point(graphics_low_screen.OTHER_TAB_POINT, graphics_low_screen.MENU_WAIT)
+        if self._has_font_row(self.screenshot()):
+            return self.round_success('已切到其他页')
+        return self.round_retry('没切到其他页', wait=1)
+
+    @node_from(from_name='切到其他页签')
+    @operation_node(name='记录原始字体', screenshot_before_round=False)
+    def snapshot_font(self) -> OperationRoundResult:
+        """补记原始字体。
+
+        字体在「其他」页，只能在切过来之后才读得到，所以和上面三项分两个节点记录。
+        已经有记录时不覆盖：否则第二次跑就会把已经调成「全局细体」的档位当成原始档位。
+        """
+        if self.snapshot.original_font != '':
+            return self.round_success('已有原始字体记录')
+
+        value = self._read_row_value(self.screenshot(), graphics_low_screen.FONT_ROW)
+        if value == '':
+            # 和记录画质时一样：读不到就别写，写了就算「已记录」，之后永远不会补记
+            return self.round_retry('读不到当前字体，稍后重试', wait=0.5)
+
+        self.snapshot.original_font = value
+        log.info(f'记录原始字体 {value}')
+        return self.round_success(f'原始字体 {value}')
+
+    @node_from(from_name='记录原始字体')
+    @operation_node(name='设置字体', screenshot_before_round=False)
+    def set_font(self) -> OperationRoundResult:
+        return self._apply_row(graphics_low_screen.FONT_ROW, self.config.target_font)
+
+    @node_from(from_name='设置字体')
     @operation_node(name='返回大世界', screenshot_before_round=False)
     def back_out(self) -> OperationRoundResult:
         self._click_point(graphics_low_screen.BACK_POINT, graphics_low_screen.BACK_WAIT)
